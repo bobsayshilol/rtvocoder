@@ -9,8 +9,7 @@ SecondOrderFilter::SecondOrderFilter() { reset(0, 0, 0, 0, 0); }
 
 SecondOrderFilter::~SecondOrderFilter() {}
 
-void SecondOrderFilter::reset(float a1, float a2, float b0, float b1,
-                              float b2) {
+void SecondOrderFilter::reset(Coef a1, Coef a2, Coef b0, Coef b1, Coef b2) {
     m_a1 = a1;
     m_a2 = a2;
     m_b0 = b0;
@@ -23,12 +22,13 @@ void SecondOrderFilter::reset(float a1, float a2, float b0, float b1,
 }
 
 void SecondOrderFilter::process(std::span<float> input) {
+    using Accumulator = Coef;
     std::vector<float> output(input.size());
 
     // Apply the filter.
     // TODO: optimize
     for (std::size_t i = 0; i < input.size(); i++) {
-        float sample = 0;
+        Accumulator sample = 0;
         sample += m_b0 * input[i];
         sample += m_b1 * (i < 1 ? m_x[i + 1] : input[i - 1]);
         sample += m_b2 * (i < 2 ? m_x[i + 0] : input[i - 2]);
