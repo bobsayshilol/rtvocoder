@@ -64,7 +64,7 @@ std::vector<float> Vocoder::process(std::span<float const> input,
     std::vector<float> result(input.size());
 
     double const interval = 12 * std::sqrt(2) / m_q;
-    double band_hz = next_hz(20, interval / 2.f);
+    double band_hz = next_hz(20, interval / 2.0);
     for (int band = 0; band < m_num_bands; band++) {
         // Bandpass both
         auto input_filtered = bandpass(m_sampling_rate, input, band_hz, m_q);
