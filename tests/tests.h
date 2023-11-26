@@ -21,11 +21,13 @@ struct TestCase {
 
 }  // namespace tests
 
+#define TEST_ARGS [[maybe_unused]] ::tests::TestResult& _test_result
+
 #define MAKE_TEST(name)                                                        \
-    static void _test_##name(::tests::TestResult& _test_result);               \
+    static void _test_##name(TEST_ARGS);                                       \
     [[maybe_unused]] static ::tests::TestCase _test_reg_##name{#name,          \
                                                                &_test_##name}; \
-    static void _test_##name([[maybe_unused]] ::tests::TestResult& _test_result)
+    static void _test_##name([[maybe_unused]] TEST_ARGS)
 
 #define CHECK_OP(lhs, rhs, op)                                             \
     do {                                                                   \
