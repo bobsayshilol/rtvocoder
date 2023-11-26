@@ -12,6 +12,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
+# Dynamic libs require PIC and shouldn't export anything by default.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 # Bring in pipewire
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
@@ -20,5 +24,6 @@ pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 add_subdirectory(cmdline)
 add_subdirectory(lib)
 add_subdirectory(libs)
+add_subdirectory(module)
 add_subdirectory(pipewire)
 add_subdirectory(tests)

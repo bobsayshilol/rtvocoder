@@ -1,3 +1,3 @@
-# Fake mic with vocoder
-add_executable(pipewire_vocoder pipewire.cc)
-target_link_libraries(pipewire_vocoder PUBLIC PkgConfig::PIPEWIRE vocoder)
+# Executable to load and configure the plugin.
+add_executable(pipewire_vocoder_loader pipewire.cc)
+target_link_libraries(pipewire_vocoder_loader PUBLIC PkgConfig::PIPEWIRE)
