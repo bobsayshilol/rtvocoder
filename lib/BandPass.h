@@ -1,6 +1,6 @@
 #pragma once
 
-#include <span>
+#include "SecondOrderFilter.h"
 
 namespace pwv {
 
@@ -11,13 +11,16 @@ class BandPass {
 
     void reset(double sampling_rate, double hz, double q);
 
-    void process(std::span<float> input);
+    void process(std::span<float> input) { m_filter.process(input); }
+
+    static double approximate_q(double sampling_rate, int num_bands);
 
   private:
     BandPass(BandPass const&) = delete;
     BandPass& operator=(BandPass const&) = delete;
 
   private:
+    SecondOrderFilter m_filter;
 };
 
 }  // namespace pwv
