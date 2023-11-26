@@ -6,10 +6,10 @@ namespace pwv {
 
 class LowPass {
   public:
-    LowPass(float sampling_rate, float cutoff_hz);
+    LowPass(double sampling_rate, double cutoff_hz);
     ~LowPass();
 
-    void reset(float sampling_rate, float cutoff_hz);
+    void reset(double sampling_rate, double cutoff_hz);
 
     void process(std::span<float> input) { m_filter.process(input); }
 

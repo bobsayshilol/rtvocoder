@@ -6,10 +6,10 @@ namespace pwv {
 
 class BandPass {
   public:
-    BandPass(float sampling_rate, float hz, float q);
+    BandPass(double sampling_rate, double hz, double q);
     ~BandPass();
 
-    void reset(float sampling_rate, float hz, float q);
+    void reset(double sampling_rate, double hz, double q);
 
     void process(std::span<float> input);
 

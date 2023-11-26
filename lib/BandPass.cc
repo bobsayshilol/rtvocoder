@@ -2,13 +2,13 @@
 
 namespace pwv {
 
-BandPass::BandPass(float sampling_rate, float hz, float q) {
+BandPass::BandPass(double sampling_rate, double hz, double q) {
     reset(sampling_rate, hz, q);
 }
 
 BandPass::~BandPass() {}
 
-void BandPass::reset(float sampling_rate, float hz, float q) {
+void BandPass::reset(double sampling_rate, double hz, double q) {
     // TODO
     (void)sampling_rate;
     (void)hz;

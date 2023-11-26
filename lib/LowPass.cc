@@ -5,13 +5,13 @@
 
 namespace pwv {
 
-LowPass::LowPass(float sampling_rate, float cutoff_hz) {
+LowPass::LowPass(double sampling_rate, double cutoff_hz) {
     reset(sampling_rate, cutoff_hz);
 }
 
 LowPass::~LowPass() {}
 
-void LowPass::reset(float sampling_rate, float cutoff_hz) {
+void LowPass::reset(double sampling_rate, double cutoff_hz) {
     // Stolen from here:
     // https://stackoverflow.com/a/20932062
     // TODO: higher order

@@ -7,7 +7,7 @@ namespace pwv {
 
 class Vocoder {
   public:
-    Vocoder(int distance, int num_bands, int sampling_rate);
+    Vocoder(double distance, int num_bands, double sampling_rate);
     ~Vocoder();
 
     std::vector<float> process(std::span<float const> input,
@@ -18,14 +18,14 @@ class Vocoder {
     Vocoder& operator=(Vocoder const&) = delete;
 
   private:
-    float next_hz(float hz, float interval) const;
+    double next_hz(double hz, double interval) const;
 
   private:
-    int const m_distance;
+    double const m_distance;
     int const m_num_bands;
-    int const m_sampling_rate;
-    float const m_octaves;
-    float const m_interval;
+    double const m_sampling_rate;
+    double const m_octaves;
+    double const m_interval;
 };
 
 }  // namespace pwv
