@@ -2,6 +2,7 @@
 add_library(vocoder
   BandPass.cc
   LowPass.cc
+  SecondOrderFilter.cc
   Utils.cc
   Vocoder.cc
 )

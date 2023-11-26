@@ -1,6 +1,6 @@
 #pragma once
 
-#include <span>
+#include "SecondOrderFilter.h"
 
 namespace pwv {
 
@@ -11,16 +11,14 @@ class LowPass {
 
     void reset(float sampling_rate, float cutoff_hz);
 
-    void process(std::span<float> input);
+    void process(std::span<float> input) { m_filter.process(input); }
 
   private:
     LowPass(LowPass const&) = delete;
     LowPass& operator=(LowPass const&) = delete;
 
   private:
-    float m_a1, m_a2, m_b0, m_b1, m_b2;
-    float m_x[2];
-    float m_y[2];
+    SecondOrderFilter m_filter;
 };
 
 }  // namespace pwv
