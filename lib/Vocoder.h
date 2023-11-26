@@ -24,8 +24,7 @@ class Vocoder {
     double const m_distance;
     int const m_num_bands;
     double const m_sampling_rate;
-    double const m_octaves;
-    double const m_interval;
+    double const m_q;
 };
 
 }  // namespace pwv

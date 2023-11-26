@@ -54,8 +54,7 @@ Vocoder::Vocoder(double distance, int num_bands, double sampling_rate)
     : m_distance(distance),
       m_num_bands(num_bands),
       m_sampling_rate(sampling_rate),
-      m_octaves(std::log2(m_sampling_rate / 2.205 / 20)),
-      m_interval(12 * m_octaves / m_num_bands) {}
+      m_q(BandPass::approximate_q(m_sampling_rate, num_bands)) {}
 
 Vocoder::~Vocoder() {}
 
@@ -64,12 +63,13 @@ std::vector<float> Vocoder::process(std::span<float const> input,
     assert(input.size() == carrier.size());
     std::vector<float> result(input.size());
 
-    double const q = m_octaves / m_num_bands / std::sqrt(2);
-    double band_hz = next_hz(20, m_interval / 2.f);
+    double const interval = 12 * std::sqrt(2) / m_q;
+    double band_hz = next_hz(20, interval / 2.f);
     for (int band = 0; band < m_num_bands; band++) {
         // Bandpass both
-        auto input_filtered = bandpass(m_sampling_rate, input, band_hz, q);
-        auto carrier_filtered = bandpass(m_sampling_rate, carrier, band_hz, q);
+        auto input_filtered = bandpass(m_sampling_rate, input, band_hz, m_q);
+        auto carrier_filtered =
+            bandpass(m_sampling_rate, carrier, band_hz, m_q);
 
         // Calculate envelope
         abs(input_filtered);
@@ -78,10 +78,10 @@ std::vector<float> Vocoder::process(std::span<float const> input,
 
         // Combine
         mul(mod_envelope, carrier_filtered);
-        add(result, bandpass(m_sampling_rate, mod_envelope, band_hz, q));
+        add(result, bandpass(m_sampling_rate, mod_envelope, band_hz, m_q));
 
         // Next band
-        band_hz = next_hz(band_hz, m_interval);
+        band_hz = next_hz(band_hz, interval);
     }
 
     return result;
