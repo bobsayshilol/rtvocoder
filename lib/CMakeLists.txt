@@ -5,6 +5,7 @@ add_library(vocoder
   SecondOrderFilter.cc
   Utils.cc
   Vocoder.cc
+  WAVFile.cc
 )
 target_include_directories(vocoder
   PUBLIC
