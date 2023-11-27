@@ -48,6 +48,18 @@ void add(std::span<float> a, std::span<float const> b) {
     }
 }
 
+double next_hz(double hz, double interval) {
+    // TODO: optimize this
+    double const k = std::log(2) / 12;
+    double const c = std::log(440) - k * 69;
+    auto hz_to_step = [&](double pitch) { return (std::log(pitch) - c) / k; };
+    auto step_to_hz = [&](double step) { return std::exp(k * step + c); };
+
+    double const prev_step = hz_to_step(hz);
+    double const next_step = prev_step + interval;
+    return step_to_hz(next_step);
+}
+
 }  // namespace
 
 Vocoder::Vocoder(double distance, int num_bands, double sampling_rate)
@@ -58,23 +70,23 @@ Vocoder::Vocoder(double distance, int num_bands, double sampling_rate)
 
 Vocoder::~Vocoder() {}
 
-std::vector<float> Vocoder::process(std::span<float const> input,
+std::vector<float> Vocoder::process(std::span<float const> signal,
                                     std::span<float const> carrier) {
-    assert(input.size() == carrier.size());
-    std::vector<float> result(input.size());
+    assert(signal.size() == carrier.size());
+    std::vector<float> result(signal.size());
 
     double const interval = 12 * std::sqrt(2) / m_q;
     double band_hz = next_hz(20, interval / 2.0);
     for (int band = 0; band < m_num_bands; band++) {
         // Bandpass both
-        auto input_filtered = bandpass(m_sampling_rate, input, band_hz, m_q);
+        auto signal_filtered = bandpass(m_sampling_rate, signal, band_hz, m_q);
         auto carrier_filtered =
             bandpass(m_sampling_rate, carrier, band_hz, m_q);
 
         // Calculate envelope
-        abs(input_filtered);
+        abs(signal_filtered);
         auto mod_envelope =
-            lowpass(m_sampling_rate, input_filtered, band_hz / m_distance);
+            lowpass(m_sampling_rate, signal_filtered, band_hz / m_distance);
 
         // Combine
         mul(mod_envelope, carrier_filtered);
@@ -85,18 +97,6 @@ std::vector<float> Vocoder::process(std::span<float const> input,
     }
 
     return result;
-}
-
-double Vocoder::next_hz(double hz, double interval) const {
-    // TODO: optimize this
-    double const k = std::log(2) / 12;
-    double const c = std::log(440) - k * 69;
-    auto hz_to_step = [&](double pitch) { return (std::log(pitch) - c) / k; };
-    auto step_to_hz = [&](double step) { return std::exp(k * step + c); };
-
-    double const prev_step = hz_to_step(hz);
-    double const next_step = prev_step + interval;
-    return step_to_hz(next_step);
 }
 
 }  // namespace pwv

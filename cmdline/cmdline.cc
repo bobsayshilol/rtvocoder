@@ -40,12 +40,12 @@ int run_vocoder(int argc, char **argv) {
     double const distance = std::atof(argv[2]);
     int const num_bands = std::atoi(argv[3]);
     char const *const signal_path = argv[4];
-    char const *const modulator_path = argv[5];
+    char const *const carrier_path = argv[5];
     char const *const output_path = argv[6];
     printf(
-        "Running with num_bands=%i, signal_path=%s, input_path=%s, "
+        "Running with num_bands=%i, signal_path=%s, carrier_path=%s, "
         "output_path=%s\n",
-        num_bands, signal_path, modulator_path, output_path);
+        num_bands, signal_path, carrier_path, output_path);
 
     // Read in the signals.
     auto signal = pwv::load_wav(signal_path);
@@ -54,26 +54,25 @@ int run_vocoder(int argc, char **argv) {
                signal.error().c_str());
         return EXIT_FAILURE;
     }
-    auto modulator = pwv::load_wav(modulator_path);
-    if (!modulator) {
-        printf("Failed to load wav: %s - %s\n", modulator_path,
-               modulator.error().c_str());
+    auto carrier = pwv::load_wav(carrier_path);
+    if (!carrier) {
+        printf("Failed to load wav: %s - %s\n", carrier_path,
+               carrier.error().c_str());
         return EXIT_FAILURE;
     }
 
     // Check that they're compatible.
-    if (signal->sampling_rate != modulator->sampling_rate) {
+    if (signal->sampling_rate != carrier->sampling_rate) {
         printf("Sampling rate mismatch\n");
         return EXIT_FAILURE;
     }
 
     // Run the filter on the data.
     std::size_t const num_samples =
-        std::min(signal->samples.size(), modulator->samples.size());
-    auto output =
-        pwv::Vocoder(distance, num_bands, signal->sampling_rate)
-            .process(std::span{signal->samples.data(), num_samples},
-                     std::span{modulator->samples.data(), num_samples});
+        std::min(signal->samples.size(), carrier->samples.size());
+    auto output = pwv::Vocoder(distance, num_bands, signal->sampling_rate)
+                      .process(std::span{signal->samples.data(), num_samples},
+                               std::span{carrier->samples.data(), num_samples});
 
     // Save it.
     pwv::WAVData wav_out;
