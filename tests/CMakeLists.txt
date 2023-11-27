@@ -3,6 +3,7 @@ add_executable(tests
     tests.cc
     test_bandpass.cc
     test_lowpass.cc
+    test_vocoder.cc
 )
 target_link_libraries(tests PUBLIC vocoder)
 
