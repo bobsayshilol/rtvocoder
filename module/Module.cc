@@ -4,6 +4,7 @@
 
 #include <Vocoder.h>
 #include <algorithm>
+#include <cassert>
 
 namespace pwv {
 
@@ -23,13 +24,13 @@ void Module::activate() {
 
 void Module::process(uint32_t sample_count) {
     // Run the filter.
-    m_vocoder->process(std::span{m_input, sample_count},
-                       std::span{m_input, sample_count});
+    auto output = m_vocoder->process(std::span{m_input, sample_count},
+                                     std::span{m_input, sample_count});
 
-    // Copy back only if we need to.
-    if (m_input != m_output) {
-        std::copy_n(m_input, sample_count, m_output);
-    }
+    // Copy it back.
+    // TODO: pass the output buffer into the vocoder.
+    assert(output.size() == sample_count);
+    std::copy_n(output.data(), sample_count, m_output);
 
     // Read the communication port and tell the thread to use it.
     m_communication_port = *m_port_addr;
