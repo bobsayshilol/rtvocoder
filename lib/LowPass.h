@@ -8,6 +8,8 @@ class LowPass {
   public:
     LowPass(double sampling_rate, double cutoff_hz);
     ~LowPass();
+    LowPass(LowPass&&) = default;
+    LowPass& operator=(LowPass&&) = default;
 
     void reset(double sampling_rate, double cutoff_hz);
 

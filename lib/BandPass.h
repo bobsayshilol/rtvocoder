@@ -8,6 +8,8 @@ class BandPass {
   public:
     BandPass(double sampling_rate, double hz, double q);
     ~BandPass();
+    BandPass(BandPass&&) = default;
+    BandPass& operator=(BandPass&&) = default;
 
     void reset(double sampling_rate, double hz, double q);
 

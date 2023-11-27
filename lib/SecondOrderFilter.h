@@ -11,6 +11,8 @@ class SecondOrderFilter {
   public:
     SecondOrderFilter();
     ~SecondOrderFilter();
+    SecondOrderFilter(SecondOrderFilter&&) = default;
+    SecondOrderFilter& operator=(SecondOrderFilter&&) = default;
 
     void reset(Coef a1, Coef a2, Coef b0, Coef b1, Coef b2);
 
