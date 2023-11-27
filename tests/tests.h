@@ -19,6 +19,13 @@ struct TestCase {
     }
 };
 
+template <typename LHS, typename RHS>
+inline TestResult make_test_result(int line, char const* check, LHS&& lhs,
+                                   RHS&& rhs) {
+    return std::to_string(line) + ": " + check + " : " + std::to_string(lhs) +
+           " vs " + std::to_string(rhs);
+}
+
 }  // namespace tests
 
 #define TEST_ARGS [[maybe_unused]] ::tests::TestResult& _test_result
@@ -29,16 +36,15 @@ struct TestCase {
                                                                &_test_##name}; \
     static void _test_##name([[maybe_unused]] TEST_ARGS)
 
-#define CHECK_OP(lhs, rhs, op)                                             \
-    do {                                                                   \
-        auto lhs_ = lhs;                                                   \
-        auto rhs_ = rhs;                                                   \
-        if (lhs_ op rhs_) {                                                \
-            _test_result = std::to_string(__LINE__) + ": " #lhs " (" +     \
-                           std::to_string(lhs_) + ") " #op " " #rhs " (" + \
-                           std::to_string(rhs_) + ")";                     \
-            return;                                                        \
-        }                                                                  \
+#define CHECK_OP(lhs, rhs, op)                                \
+    do {                                                      \
+        auto lhs_ = lhs;                                      \
+        auto rhs_ = rhs;                                      \
+        if (lhs_ op rhs_) {                                   \
+            _test_result = ::tests::make_test_result(         \
+                __LINE__, #lhs " " #op " " #rhs, lhs_, rhs_); \
+            return;                                           \
+        }                                                     \
     } while (false)
 
 #define CHECK_EQ(lhs, rhs) CHECK_OP(lhs, rhs, !=)
