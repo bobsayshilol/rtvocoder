@@ -84,7 +84,7 @@ int run_vocoder(int argc, char **argv) {
     }
 
     printf("Success!\n");
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 int run_lowpass(int argc, char **argv) {
