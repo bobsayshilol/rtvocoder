@@ -39,30 +39,43 @@ MAKE_TEST(LowPass_process) {
     }
 }
 
-MAKE_TEST(LowPass_process_block) {
+MAKE_TEST(LowPass_process_chunk) {
     std::size_t const sampling_rate = 100;
     std::size_t const cutoff_hz = 10;
+    std::size_t const num_samples = pwv::LowPass::k_block_size * sampling_rate;
 
     // Generate some data.
-    std::vector<float> samples_all(sampling_rate);
+    std::vector<float> samples_all(num_samples);
     pwv::add_sine(samples_all, sampling_rate, cutoff_hz, 0.1);
     auto samples_chunked = samples_all;
+    auto samples_blocked = samples_all;
 
-    // Apply it in a single block.
+    // Apply it in a single chunk.
     pwv::LowPass(sampling_rate, cutoff_hz).process(samples_all);
 
-    // Apply it in blocks.
-    std::size_t const block_size = 10;
-    static_assert(sampling_rate % block_size == 0);
-    pwv::LowPass lowpass(sampling_rate, cutoff_hz);
-    for (std::size_t block_start = 0; block_start < samples_chunked.size();
-         block_start += block_size) {
-        lowpass.process(
-            std::span{samples_chunked}.subspan(block_start, block_size));
+    // Apply it in chunks.
+    std::size_t const chunk_size = pwv::LowPass::k_block_size * 2;
+    static_assert(num_samples % chunk_size == 0);
+    pwv::LowPass filter_chunk(sampling_rate, cutoff_hz);
+    pwv::LowPass filter_block(sampling_rate, cutoff_hz);
+    for (std::size_t chunk_start = 0; chunk_start < samples_chunked.size();
+         chunk_start += chunk_size) {
+        // Single chunk.
+        filter_chunk.process(
+            std::span{samples_chunked}.subspan(chunk_start, chunk_size));
+
+        // Single block.
+        static_assert(chunk_size % pwv::LowPass::k_block_size == 0);
+        for (std::size_t block_offset = 0; block_offset < chunk_size;
+             block_offset += pwv::LowPass::k_block_size) {
+            filter_block.process_block(std::span{samples_blocked}.subspan(
+                chunk_start + block_offset, pwv::LowPass::k_block_size));
+        }
     }
 
     // Check that they match.
     for (std::size_t i = 0; i < samples_all.size(); i++) {
         CHECK_EQ(samples_all[i], samples_chunked[i]);
+        CHECK_EQ(samples_all[i], samples_blocked[i]);
     }
 }
