@@ -1,6 +1,8 @@
+#include <BandPass.h>
 #include <LowPass.h>
 #include <Vocoder.h>
 #include <WAVFile.h>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <string_view>
@@ -10,6 +12,7 @@ namespace {
 int run_vocoder(int argc, char **argv);
 int run_lowpass(int argc, char **argv);
 int run_noop(int argc, char **argv);
+int run_benchmark(int argc, char **argv);
 
 const struct {
     char const *name;
@@ -20,6 +23,7 @@ const struct {
      run_vocoder},
     {"lowpass", "<cutoff> <input> <output>", run_lowpass},
     {"noop", "<input> <output>", run_noop},
+    {"benchmark", "<input>", run_benchmark},
 };
 
 void usage(char const *name) {
@@ -147,6 +151,119 @@ int run_noop(int argc, char **argv) {
     if (!pwv::save_wav(*input, output_path)) {
         printf("Failed to save wav: %s\n", output_path);
         return EXIT_FAILURE;
+    }
+
+    printf("Success!\n");
+    return EXIT_SUCCESS;
+}
+
+int run_benchmark(int argc, char **argv) {
+    if (argc < 3) {
+        printf("Not enough args to benchmark\n");
+        usage(argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    // Read off args.
+    char const *const input_path = argv[2];
+    printf("Running with input_path=%s\n", input_path);
+
+    // Read in the input.
+    auto input = pwv::load_wav(input_path);
+    if (!input) {
+        printf("Failed to load wav: %s - %s\n", input_path,
+               input.error().c_str());
+        return EXIT_FAILURE;
+    }
+
+    // Quick timer class.
+    struct Timer {
+        using Clock = std::chrono::high_resolution_clock;
+        Clock::time_point start;
+
+        Timer() : start(Clock::now()) {}
+        auto elapsed() const {
+            return std::chrono::duration_cast<std::chrono::duration<double>>(
+                Clock::now() - start);
+        }
+    };
+
+    // Shrink the data so that it's a nice block size.
+    std::size_t const chunk_size = pwv::VocoderRT::k_block_size * 2;
+    std::size_t const num_samples =
+        (input->samples.size() / chunk_size) * chunk_size;
+    input->samples.resize(num_samples);
+
+    // Helper to report a result.
+    double const input_time =
+        num_samples / static_cast<double>(input->sampling_rate);
+    auto log_result = [&](char const *name, int opt, double elapsed) {
+        printf("%s (%i):\t%fs in %fs (%fx)\n", name, opt, input_time, elapsed,
+               input_time / elapsed);
+    };
+
+    // Lowpass.
+    for (int cutoff_hz : {200, 1000, 2000}) {
+        pwv::LowPass filter(input->sampling_rate, cutoff_hz);
+        auto signal_copy = input->samples;
+        {
+            Timer timer;
+            filter.process(signal_copy);
+            log_result("Lowpass bulk", cutoff_hz, timer.elapsed().count());
+        }
+        {
+            Timer timer;
+            for (std::size_t chunk_start = 0; chunk_start < num_samples;
+                 chunk_start += chunk_size) {
+                filter.process(
+                    std::span{signal_copy}.subspan(chunk_start, chunk_size));
+            }
+            log_result("Lowpass rt", cutoff_hz, timer.elapsed().count());
+        }
+    }
+
+    // Bandpass.
+    for (int num_bands : {10, 40, 80}) {
+        auto q = pwv::BandPass::approximate_q(input->sampling_rate, num_bands);
+        pwv::BandPass filter(input->sampling_rate, 600, q);
+        auto signal_copy = input->samples;
+        {
+            Timer timer;
+            filter.process(signal_copy);
+            log_result("BandPass bulk", num_bands, timer.elapsed().count());
+        }
+        {
+            Timer timer;
+            for (std::size_t chunk_start = 0; chunk_start < num_samples;
+                 chunk_start += chunk_size) {
+                filter.process(
+                    std::span{signal_copy}.subspan(chunk_start, chunk_size));
+            }
+            log_result("BandPass rt", num_bands, timer.elapsed().count());
+        }
+    }
+
+    // Vocoder.
+    for (int num_bands : {10, 40, 80}) {
+        {
+            pwv::Vocoder filter(20, num_bands, input->sampling_rate);
+            auto signal_copy = input->samples;
+            Timer timer;
+            filter.process(signal_copy, signal_copy);
+            log_result("Vocoder bulk", num_bands, timer.elapsed().count());
+        }
+        {
+            pwv::VocoderRT filter(20, num_bands, input->sampling_rate);
+            auto const &signal_copy = input->samples;
+            std::vector<float> output(signal_copy.size());
+            Timer timer;
+            for (std::size_t chunk_start = 0; chunk_start < num_samples;
+                 chunk_start += chunk_size) {
+                filter.process(signal_copy.data(), signal_copy.data(),
+                               chunk_size, output.data());
+            }
+            log_result("Vocoder rt", num_bands, timer.elapsed().count());
+        }
     }
 
     printf("Success!\n");
