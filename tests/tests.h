@@ -53,3 +53,14 @@ inline TestResult make_test_result(int line, char const* check, LHS&& lhs,
 #define CHECK_GT(lhs, rhs) CHECK_OP(lhs, rhs, <=)
 #define CHECK_LE(lhs, rhs) CHECK_OP(lhs, rhs, >)
 #define CHECK_GE(lhs, rhs) CHECK_OP(lhs, rhs, <)
+
+#define APPROX_EQ(lhs, rhs)                               \
+    do {                                                  \
+        auto lhs_ = lhs;                                  \
+        auto rhs_ = rhs;                                  \
+        if (std::abs(lhs_ - rhs_) > 1e-6) {               \
+            _test_result = ::tests::make_test_result(     \
+                __LINE__, #lhs " !~= " #rhs, lhs_, rhs_); \
+            return;                                       \
+        }                                                 \
+    } while (false)

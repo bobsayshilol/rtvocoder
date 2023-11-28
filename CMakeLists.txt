@@ -15,6 +15,9 @@ add_compile_options(-Wall -Wextra -pedantic -Werror)
 # Always enable debug symbols.
 add_compile_options(-g)
 
+# Speedy.
+add_compile_options(-march=native)
+
 # Dynamic libs require PIC and shouldn't export anything by default.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)

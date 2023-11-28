@@ -34,7 +34,7 @@ MAKE_TEST(Vocoder_process_chunk) {
     CHECK_EQ(output_all.size(), num_samples);
     CHECK_EQ(output_all_rt.size(), num_samples);
     for (std::size_t i = 0; i < num_samples; i++) {
-        CHECK_EQ(output_all[i], output_all_rt[i]);
+        APPROX_EQ(output_all[i], output_all_rt[i]);
     }
 
     // Apply it in chunks.
@@ -53,6 +53,6 @@ MAKE_TEST(Vocoder_process_chunk) {
     // Check that realtime matches.
     CHECK_EQ(output_chunk_rt.size(), num_samples);
     for (std::size_t i = 0; i < num_samples; i++) {
-        CHECK_EQ(output_all[i], output_chunk_rt[i]);
+        APPROX_EQ(output_all[i], output_chunk_rt[i]);
     }
 }

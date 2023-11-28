@@ -85,7 +85,7 @@ MAKE_TEST(BandPass_process_chunk) {
 
     // Check that they match.
     for (std::size_t i = 0; i < samples_all.size(); i++) {
-        CHECK_EQ(samples_all[i], samples_chunked[i]);
-        CHECK_EQ(samples_all[i], samples_blocked[i]);
+        APPROX_EQ(samples_all[i], samples_chunked[i]);
+        APPROX_EQ(samples_all[i], samples_blocked[i]);
     }
 }
