@@ -12,6 +12,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 23)
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
+# Always enable debug symbols.
+add_compile_options(-g)
+
 # Dynamic libs require PIC and shouldn't export anything by default.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
