@@ -129,6 +129,9 @@ void VocoderRT::process(float const* signal, float const* carrier,
 
 void VocoderRT::process_block(float const* signal, float const* carrier,
                               float* output) {
+    static_assert(k_block_size == BandPass::k_block_size);
+    static_assert(k_block_size == LowPass::k_block_size);
+
     using Block = std::array<float, k_block_size>;
     auto load_block = [](float const* ptr) {
         Block block;
@@ -141,6 +144,7 @@ void VocoderRT::process_block(float const* signal, float const* carrier,
     Block const carrier_input = load_block(carrier);
 
     // Run the filters on it.
+    // TODO: might be more efficient to optimize over the filters...
     Block result_block{};
     std::size_t const num_bands = m_lowpass.size();
     for (std::size_t band = 0; band < num_bands; band++) {
@@ -155,16 +159,16 @@ void VocoderRT::process_block(float const* signal, float const* carrier,
         Block carrier_block = carrier_input;
 
         // Bandpass both inputs.
-        bandpass0.process(signal_block);
-        bandpass1.process(carrier_block);
+        bandpass0.process_block(signal_block);
+        bandpass1.process_block(carrier_block);
 
         // Calculate envelope.
         abs(signal_block);
-        lowpass.process(signal_block);
+        lowpass.process_block(signal_block);
 
         // Combine.
         mul(signal_block, carrier_block);
-        bandpass2.process(signal_block);
+        bandpass2.process_block(signal_block);
         add(result_block, signal_block);
     }
 
