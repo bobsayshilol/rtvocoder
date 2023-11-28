@@ -1,4 +1,3 @@
-#include <Vocoder.h>
 #include <cstdlib>
 
 int main() {
