@@ -10,3 +10,5 @@ target_link_libraries(ladspa_vocoder_module
         ladspa
         lv2
 )
+
+add_subdirectory(internal)

@@ -1,7 +1,7 @@
 #include "ModuleWrapper.h"
 
-#include "IModule.h"
 #include "IPC.h"
+#include "internal/IModule.h"
 
 #include <algorithm>
 #include <cassert>
