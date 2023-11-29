@@ -7,12 +7,12 @@
 
 namespace pwv {
 
-class Vocoder;
+class ModuleWrapper {
+    struct ModuleHolder;
 
-class Module {
   public:
-    explicit Module(double sampling_rate);
-    ~Module();
+    explicit ModuleWrapper(double sampling_rate);
+    ~ModuleWrapper();
 
     void set_input_buffer(float* input) { m_input = input; }
     void set_output_buffer(float* output) { m_output = output; }
@@ -23,8 +23,8 @@ class Module {
     void deactivate();
 
   private:
-    Module(Module const&) = delete;
-    Module& operator=(Module const&) = delete;
+    ModuleWrapper(ModuleWrapper const&) = delete;
+    ModuleWrapper& operator=(ModuleWrapper const&) = delete;
 
   private:
     enum class ThreadState { Idle, Run, Join };
@@ -34,10 +34,17 @@ class Module {
     uint16_t m_communication_port = 0;
 
   private:
+    double const m_sampling_rate;
     float* m_input = nullptr;
     float* m_output = nullptr;
     float* m_port_addr = nullptr;
-    std::unique_ptr<Vocoder> m_vocoder;
+    std::unique_ptr<ModuleHolder> m_module;
+
+  private:
+    enum class ModuleQueueState { None, QueuedIn, QueuedOut };
+    std::atomic<ModuleQueueState> m_module_queue_state;
+    std::unique_ptr<ModuleHolder> m_module_queue;
+    bool reload_module();
 };
 
 }  // namespace pwv

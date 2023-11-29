@@ -1,4 +1,4 @@
-#include "Module.h"
+#include "ModuleWrapper.h"
 
 #include <lv2.h>
 #include <memory>
@@ -9,7 +9,9 @@ constexpr uint32_t k_input_port = 0;   /* lv2:AudioPort */
 constexpr uint32_t k_output_port = 1;  /* lv2:AudioPort */
 constexpr uint32_t k_control_port = 2; /* TODO */
 
-auto to_module(LV2_Handle handle) { return static_cast<pwv::Module*>(handle); }
+auto to_module(LV2_Handle handle) {
+    return static_cast<pwv::ModuleWrapper*>(handle);
+}
 
 LV2_Handle lv2_instantiate(const struct LV2_Descriptor* descriptor,
                            double sample_rate, char const* bundle_path,
@@ -22,7 +24,7 @@ LV2_Handle lv2_instantiate(const struct LV2_Descriptor* descriptor,
     (void)bundle_path;
     (void)features;
 
-    auto module = std::make_unique<pwv::Module>(sample_rate);
+    auto module = std::make_unique<pwv::ModuleWrapper>(sample_rate);
     return module.release();
 }
 
@@ -57,7 +59,7 @@ void lv2_deactivate(LV2_Handle instance) {
 }
 
 void lv2_cleanup(LV2_Handle instance) {
-    std::unique_ptr<pwv::Module> module(to_module(instance));
+    std::unique_ptr<pwv::ModuleWrapper> module(to_module(instance));
 }
 
 void const* lv2_extension_data(char const* uri) {

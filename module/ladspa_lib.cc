@@ -1,4 +1,4 @@
-#include "Module.h"
+#include "ModuleWrapper.h"
 
 #include <ladspa.h>
 #include <memory>
@@ -33,7 +33,7 @@ LADSPA_PortRangeHint const g_port_hints[] = {
 static_assert(std::size(g_port_hints) == k_num_ports);
 
 auto to_module(LADSPA_Handle handle) {
-    return static_cast<pwv::Module*>(handle);
+    return static_cast<pwv::ModuleWrapper*>(handle);
 }
 
 LADSPA_Handle ladspa_instantiate(LADSPA_Descriptor const* descriptor,
@@ -43,7 +43,7 @@ LADSPA_Handle ladspa_instantiate(LADSPA_Descriptor const* descriptor,
         return nullptr;
     }
 
-    auto module = std::make_unique<pwv::Module>(sample_rate);
+    auto module = std::make_unique<pwv::ModuleWrapper>(sample_rate);
     return module.release();
 }
 
@@ -79,7 +79,7 @@ void ladspa_deactivate(LADSPA_Handle instance) {
 }
 
 void ladspa_cleanup(LADSPA_Handle instance) {
-    std::unique_ptr<pwv::Module> module(to_module(instance));
+    std::unique_ptr<pwv::ModuleWrapper> module(to_module(instance));
 }
 
 LADSPA_Descriptor const g_descriptor{
