@@ -42,6 +42,12 @@ void mul(std::span<float> a, std::span<float const> b) {
     }
 }
 
+void mul(std::span<float> input, float scale) {
+    for (float& sample : input) {
+        sample *= scale;
+    }
+}
+
 void add(std::span<float> a, std::span<float const> b) {
     assert(a.size() == b.size());
     for (std::size_t i = 0; i < a.size(); i++) {
@@ -171,6 +177,9 @@ void VocoderRT::process_block(float const* signal, float const* carrier,
         bandpass2.process_block(signal_block);
         add(result_block, signal_block);
     }
+
+    // Need to scale it up a bit.
+    mul(result_block, 50);
 
     // Store it back.
     std::copy_n(result_block.data(), k_block_size, output);
