@@ -8,7 +8,7 @@ bool Client::connect(uint16_t port) {
     return false;
 }
 
-std::optional<Message> read_message() {
+std::optional<Message> Client::read_message() {
     // TODO
     return std::nullopt;
 }

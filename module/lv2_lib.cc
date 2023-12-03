@@ -75,7 +75,8 @@ LV2_Descriptor const g_descriptor{
 
 }  // namespace
 
-LV2_Descriptor const* lv2_descriptor(uint32_t index) {
+__attribute__((visibility("default"))) LV2_Descriptor const* lv2_descriptor(
+    uint32_t index) {
     if (index == 0) {
         return &g_descriptor;
     }

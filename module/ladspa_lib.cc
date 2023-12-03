@@ -20,7 +20,7 @@ static_assert(std::size(g_ports) == k_num_ports);
 char const* const g_port_names[] = {
     /* k_input_port */ "Input audio buffer",
     /* k_output_port */ "Output audio buffer",
-    /* k_control_port */ "control 0",
+    /* k_control_port */ "Port",
 };
 static_assert(std::size(g_port_names) == k_num_ports);
 
@@ -85,7 +85,7 @@ void ladspa_cleanup(LADSPA_Handle instance) {
 LADSPA_Descriptor const g_descriptor{
     .UniqueID = 0x1234 /* TODO */,
 
-    .Label = "TODO",
+    .Label = "vocoder_test_filter",
 
     .Properties =
         LADSPA_PROPERTY_INPLACE_BROKEN /* | LADSPA_PROPERTY_HARD_RT_CAPABLE */,
@@ -125,7 +125,8 @@ LADSPA_Descriptor const g_descriptor{
 
 }  // namespace
 
-LADSPA_Descriptor const* ladspa_descriptor(unsigned long index) {
+__attribute__((visibility("default"))) LADSPA_Descriptor const*
+ladspa_descriptor(unsigned long index) {
     if (index == 0) {
         return &g_descriptor;
     }
